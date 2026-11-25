@@ -10,6 +10,20 @@ const unsentLine =
 
 const entry = `To: ${addressee}\n${unsentLine}\n`;
 
+// Guard the bounty gates before writing anything: the entry must be
+// non-empty and at most 260 characters total, and the unsent line itself
+// at most 200 characters. Failing loudly here beats shipping a
+// disqualified entry.
+if (!addressee.trim() || !unsentLine.trim()) {
+  throw new Error("Confession is missing its addressee or its unsent line.");
+}
+if (entry.length < 1 || entry.length > 260) {
+  throw new Error(`Entry is ${entry.length} characters; gates require 1–260.`);
+}
+if (unsentLine.length > 200) {
+  throw new Error(`Unsent line is ${unsentLine.length} characters; max is 200.`);
+}
+
 const outDir = process.env.OUTPUT_DIR ?? "/output";
 mkdirSync(outDir, { recursive: true });
 writeFileSync(join(outDir, "entry.txt"), entry, "utf8");
